@@ -1,34 +1,32 @@
-from sources.parsedocument import ParseDocument as Parse
-import sys
+from classes.parsedocument import ParseDocument as Parse
 import os
 import time
+import argparse
 
 
 def main():
-    # menu
-    if len(sys.argv) != 5:
-        print('python3 main.py choice k threshold directory')
-        print('')
-        print(
-            'choices : 0 for compareSet,'
-            ' 1 for minHashing + compareSignatures,'
-            ' 2 for minHashing + LSH + compareSignatures,'
-            ' 3 for all')
-        print('')
-        print('k for length of shinglings')
-        print('')
-        print('threshold for similarity')
-        print('')
-        print('directory with documents')
-        print('')
-        print('example : python3 main.py 0 5 0.8 data/')
-        sys.exit()
+    # flags and arguments
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-c", "--choice", type=int, choices=[0, 1, 2, 3], default=2,
+                        help=' 0 for compareSet,'
+                             ' 1 for minHashing + compareSignatures,'
+                             ' 2 for minHashing + LSH + compareSignatures,'
+                             ' 3 for all,'
+                             ' default = 3')
+    parser.add_argument("-k", "--k", type=int, default=5, help='length of shinglings')
+    parser.add_argument("-t", "--threshold", type=float, default=0.7, help='threshold for similarity')
+    parser.add_argument("-n", "--nb_hash", type=int, default=100, help='number of hash functions, default=100')
+    parser.add_argument("-b", "--bands", type=int, default=20, help='number of bands for LSH, default=20')
+    parser.add_argument("directory", help='directory with documents')
+    args = parser.parse_args()
 
     # get args
-    choice = int(sys.argv[1])
-    k = int(sys.argv[2])
-    threshold = float(sys.argv[3])
-    DIR = str(sys.argv[4])
+    choice = args.choice
+    k = args.k
+    threshold = args.threshold
+    n_hash = args.nb_hash
+    n_bands = args.bands
+    DIR = str(args.directory)
 
     # create set of hashed shinblings and filenames is just a list with the filenames
     set_shinblings, filenames = create_shinblings(DIR, k)
@@ -49,7 +47,7 @@ def main():
 
     if choice == 1:
         # create hash functions, default number is set to 100
-        hash_functions = Parse.create_hash_functions()
+        hash_functions = Parse.create_hash_functions(n_hash)
         start_time = time.time()
         # create list of signatures from set of shinblings
         set_signatures = create_signatures(set_shinblings, hash_functions)
@@ -60,12 +58,12 @@ def main():
 
     if choice == 2:
         # create hash functions, default number is set to 100
-        hash_functions = Parse.create_hash_functions()
+        hash_functions = Parse.create_hash_functions(n_hash)
         start_time = time.time()
         # create list of signatures from set of shinblings
         set_signatures = create_signatures(set_shinblings, hash_functions)
         # create set of candidates
-        set_lsh_candidates = Parse.locality_sensitive_hashing(set_signatures)
+        set_lsh_candidates = Parse.locality_sensitive_hashing(set_signatures, n_bands)
         # print candidates
         candidates_lsh_print(set_lsh_candidates, filenames)
         print('')
@@ -76,7 +74,7 @@ def main():
 
     if choice == 3:
         # create hash functions, default number is set to 100
-        hash_functions = Parse.create_hash_functions()
+        hash_functions = Parse.create_hash_functions(n_hash)
 
         start_time = time.time()
         # print the results of compare_sets if more than threshold
@@ -98,7 +96,7 @@ def main():
         # create list of signatures from set of shinblings
         set_signatures = create_signatures(set_shinblings, hash_functions)
         # create set of candidates
-        set_lsh_candidates = Parse.locality_sensitive_hashing(set_signatures)
+        set_lsh_candidates = Parse.locality_sensitive_hashing(set_signatures, n_bands)
         # print the results of compare_signatures for candidates if more than threshold
         compare_lsh_print(set_lsh_candidates, set_signatures, threshold, filenames)
         print('')

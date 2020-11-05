@@ -90,7 +90,7 @@ class ParseDocument:
 
     # create random hash functions
     @staticmethod
-    def create_hash_functions(n_hash=100):
+    def create_hash_functions(n_hash):
 
         # max_size is max integer
         max_size = 2 ** 32 - 1
@@ -125,7 +125,7 @@ class ParseDocument:
 
     # Implementation of LSH
     @staticmethod
-    def locality_sensitive_hashing(signatures, n_bands=20):
+    def locality_sensitive_hashing(signatures, n_bands):
 
         # variables initialisation
         n_document = len(signatures)
@@ -164,6 +164,6 @@ class ParseDocument:
 
                     # add the document to hash map
                     buckets[hash_band] += [j]
-                    
+
         # return all the possible candidates
         return candidates
